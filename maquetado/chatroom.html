@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colab App</title>
+    <link rel="stylesheet" href="css/chatroom.css">
+</head>
+<body>
+    <!-- Sidebar con grupos -->
+    <div class="sidebar">
+        <div class="header">
+            <div class="title">Grupos</div>
+            <div class="group-icon">
+                <!-- Espacio para icono -->
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Buscar chat">
+                <span class="search-icon">
+                    <!-- Espacio para icono -->
+                </span>
+            </div>
+        </div>
+        
+        <ul class="group-list">
+            <li class="group-item" data-id="is">
+                <div class="avatar">IS</div>
+                <div class="group-name">Ingeniería en software</div>
+            </li>
+            <li class="group-item" data-id="po">
+                <div class="avatar">PO</div>
+                <div class="group-name">Programación Orientada a Objetos</div>
+            </li>
+            <li class="group-item" data-id="bd">
+                <div class="avatar">BD</div>
+                <div class="group-name">Bases de Datos Avanzadas</div>
+            </li>
+            <li class="group-item" data-id="su">
+                <div class="avatar">SU</div>
+                <div class="group-name">Ser Universitario B</div>
+            </li>
+            <li class="group-item" data-id="hs">
+                <div class="avatar">HS</div>
+                <div class="group-name">Humanismo Clásico y Contemporáneo</div>
+            </li>
+            <li class="group-item" data-id="if">
+                <div class="avatar">IF</div>
+                <div class="group-name">Ingeniería Financiera</div>
+            </li>
+            <li class="group-item" data-id="ic">
+                <div class="avatar">IC</div>
+                <div class="group-name">Informática en Cuarta Revolusión Industrial</div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Área de chat -->
+    <div class="chat-container">
+        <div id="empty-state" class="empty-chat">
+            <div class="empty-chat-icon">💬</div>
+            <p>Selecciona un chat para comenzar</p>
+        </div>
+        
+        <div id="chat-area" style="display: none; height: 100%; flex-direction: column;">
+            <header class="chat-header">
+                <div class="chat-header-info">
+                    <div class="avatar" id="chat-avatar">IS</div>
+                    <div class="chat-name" id="chat-name">Ingeniería en software</div>
+                </div>
+            </header>
+            
+            <div class="chat-body" id="chat-body">
+                <!-- Mensajes -->
+            </div>
+            
+            <footer class="chat-footer">
+                <div class="input-container">
+                    <input type="text" class="message-input" id="message-input" placeholder="Escribe un mensaje aquí">
+                </div>
+                <button class="send-button" id="send-button" type="button">
+                    <img class="send-icon" src="resources/send.svg" alt="send">
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="js/chatroom.js"></script>
+</body>
+</html>
