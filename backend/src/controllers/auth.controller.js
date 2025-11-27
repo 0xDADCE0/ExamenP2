@@ -7,7 +7,7 @@ const ApiError = require('../utils/ApiError');
 const authController = {
     // Registrar nuevo usuario
     async register(req, res) {
-        const { email, password } = req.body;
+        const { email, password, username } = req.body;
         
         // Verificar si el email ya existe
         const [existing] = await db.execute(
@@ -22,10 +22,12 @@ const authController = {
         // Hashear la contraseña
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
+
+        const userToSave = username || '';
         
         const [result] = await db.execute(
-            'INSERT INTO users (email, password_hash) VALUES (?, ?)',
-            [email, password_hash]
+            'INSERT INTO users (email, password_hash, username) VALUES (?, ?, ?)',
+            [email, password_hash, userToSave]
         );
         
         res.status(201).json({ 
