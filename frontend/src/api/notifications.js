@@ -1,8 +1,8 @@
 // src/api/notifications.js
 import { apiFetch } from './client';
 
-export function fetchNotifications(token) {
-  return apiFetch('/notifications?status=unread&limit=50&offset=0', {
+export function fetchNotifications(token, status = 'all') {
+  return apiFetch(`/notifications?status=${status}&limit=100&offset=0`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
