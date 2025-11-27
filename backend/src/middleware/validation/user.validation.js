@@ -5,7 +5,7 @@ const EMAIL_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 // Validar datos para crear usuario
 const validateCreateUser = (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, username } = req.body;
     const errors = [];
 
     // Verificar campos requeridos
@@ -20,6 +20,10 @@ const validateCreateUser = (req, res, next) => {
     // Validar longitud de contraseña
     if (password !== undefined && password.length < 8) {
         errors.push('La contraseña debe tener al menos 8 caracteres');
+    }
+
+    if (username !== undefined && username.length > 50) {
+        errors.push('El nombre no puede exceder 50 caracteres');
     }
 
     if (errors.length > 0) {
@@ -52,7 +56,7 @@ const validateLogin = (req, res, next) => {
 
 // Validar datos para actualizar usuario
 const validateUpdateUser = (req, res, next) => {
-    const { email, password, username } = req.body;
+    const { email, password, username } = req.body || {};
     const errors = [];
 
     if (email === undefined && password === undefined && username === undefined) {
