@@ -19,6 +19,7 @@ const { validateCreateUser, validateLogin } = require('../middleware/validation/
  *             required:
  *               - email
  *               - password
+ *               - username
  *             properties:
  *               email:
  *                 type: string
@@ -26,6 +27,9 @@ const { validateCreateUser, validateLogin } = require('../middleware/validation/
  *               password:
  *                 type: string
  *                 minLength: 8
+ *               username:
+ *                 type: string
+ *                 maxLength: 50
  *     responses:
  *       201:
  *         description: Usuario creado exitosamente
