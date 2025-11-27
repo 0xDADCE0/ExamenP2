@@ -3,21 +3,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { subscribeToDevice } from '../api/devices';
 
 export default function ScanQRScreen({ token, navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
+  
   const [manualCode, setManualCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -28,40 +31,57 @@ export default function ScanQRScreen({ token, navigation }) {
 
   const handleBarCodeScanned = async ({ data }) => {
     setShowScanner(false);
-    await handleSubscribe(data);
+    await handleSubscribe(data, false);
   };
 
-  const handleSubscribe = async (deviceCode) => {
+  const handleManualConnect = async () => {
+    if (!manualCode.trim()) {
+      setErrorMessage('Ingresa un ID válido.');
+      return;
+    }
+    await handleSubscribe(manualCode, true);
+  };
+
+  const handleSubscribe = async (deviceCode, isManual) => {
     setLoading(true);
+    if (isManual) {
+        setErrorMessage(null);
+        setSuccessMessage(null);
+    }
+
     try {
       await subscribeToDevice(token, deviceCode.trim());
-      Alert.alert('Device connected', `Device ${deviceCode} subscribed successfully.`);
-      setManualCode('');
+      
+      if (isManual) {
+          setSuccessMessage('¡Dispositivo encontrado y vinculado!');
+          setManualCode('');
+      } else {
+          Alert.alert('Éxito', `Dispositivo ${deviceCode} vinculado correctamente.`);
+      }
+
     } catch (e) {
-      Alert.alert('Error', e.message);
+      if (isManual) {
+          setErrorMessage(e.message || 'Error al conectar');
+      } else {
+          Alert.alert('Error', e.message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleManualConnect = async () => {
-    if (!manualCode.trim()) {
-      Alert.alert('Missing ID', 'Enter Lucía ID manually.');
-      return;
-    }
-    await handleSubscribe(manualCode);
-  };
-
   return (
     <View style={styles.container}>
+        {/* Header Centrado */}
         <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-            <Ionicons name="menu" size={26} color="#ffffff" />
-        </TouchableOpacity>
-        <View style={{ marginLeft: 12 }}>
-            <Text style={styles.headerTitle}>Scan QR</Text>
-            <Text style={styles.headerSubtitle}>Scan QR code to pair this device</Text>
-        </View>
+            <TouchableOpacity style={styles.headerButton} onPress={() => navigation.openDrawer()}>
+                <Ionicons name="menu" size={26} color="#ffffff" />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+                <Text style={styles.headerTitle}>Scan QR</Text>
+                <Text style={styles.headerSubtitle}>Vincular nuevo dispositivo</Text>
+            </View>
+            <View style={styles.headerRightDummy} />
         </View>
 
       <View style={styles.scannerBox}>
@@ -73,7 +93,7 @@ export default function ScanQRScreen({ token, navigation }) {
         ) : (
           <View style={styles.placeholderBox}>
             <Ionicons name="qr-code-outline" size={64} color="#444444" />
-            <Text style={styles.placeholderText}>Align QR code</Text>
+            <Text style={styles.placeholderText}>Alinear código QR</Text>
           </View>
         )}
       </View>
@@ -83,20 +103,28 @@ export default function ScanQRScreen({ token, navigation }) {
         onPress={() => setShowScanner(true)}
       >
         <Ionicons name="camera-outline" size={18} color="#000000" />
-        <Text style={styles.openCameraText}>Open Camera</Text>
+        <Text style={styles.openCameraText}>Abrir Cámara</Text>
       </TouchableOpacity>
 
       <View style={styles.manualBox}>
-        <Text style={styles.manualTitle}>Manual Setup</Text>
-        <Text style={styles.manualSubtitle}>Enter Lucía ID manually</Text>
+        <Text style={styles.manualTitle}>Configuración Manual</Text>
+        <Text style={styles.manualSubtitle}>Ingresa el ID de Lucía manualmente</Text>
 
         <TextInput
-          style={styles.manualInput}
+          style={[
+              styles.manualInput, 
+              errorMessage && styles.inputError,
+              successMessage && styles.inputSuccess
+          ]}
           placeholder="CAM-XXXX-XXXX"
           placeholderTextColor="#777777"
           autoCapitalize="none"
           value={manualCode}
-          onChangeText={setManualCode}
+          onChangeText={(text) => {
+              setManualCode(text);
+              if (errorMessage) setErrorMessage(null);
+              if (successMessage) setSuccessMessage(null);
+          }}
         />
 
         <TouchableOpacity
@@ -107,9 +135,28 @@ export default function ScanQRScreen({ token, navigation }) {
           {loading ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.connectText}>Connect Camera</Text>
+            <Text style={styles.connectText}>Conectar Cámara</Text>
           )}
         </TouchableOpacity>
+
+        {/* --- MENSAJES DE ESTADO --- */}
+        
+        {/* Caso Error */}
+        {errorMessage && (
+            <View style={styles.messageContainer}>
+                <Ionicons name="alert-circle" size={16} color="#ff4d4f" />
+                <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+        )}
+
+        {/* Caso Éxito */}
+        {successMessage && (
+            <View style={styles.messageContainer}>
+                <Ionicons name="checkmark-circle" size={16} color="#4caf50" />
+                <Text style={styles.successText}>{successMessage}</Text>
+            </View>
+        )}
+
       </View>
     </View>
   );
@@ -127,15 +174,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  headerButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    zIndex: 1,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerRightDummy: {
+    width: 40,
+  },
   headerTitle: {
     color: '#ffffff',
     fontSize: 24,
     fontWeight: '700',
+    textAlign: 'center',
   },
   headerSubtitle: {
     color: '#888888',
     fontSize: 12,
     marginTop: 4,
+    textAlign: 'center',
   },
   scannerBox: {
     height: 260,
@@ -193,6 +256,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 16,
   },
+  inputError: {
+    borderColor: '#ff4d4f',
+  },
+  inputSuccess: {
+    borderColor: '#4caf50',
+  },
   connectButton: {
     backgroundColor: '#333333',
     borderRadius: 12,
@@ -203,4 +272,23 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
   },
+  messageContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 12,
+      paddingHorizontal: 8
+  },
+  errorText: {
+      color: '#ff4d4f',
+      fontSize: 14,
+      marginLeft: 6,
+      fontWeight: '500'
+  },
+  successText: {
+      color: '#4caf50',
+      fontSize: 14,
+      marginLeft: 6,
+      fontWeight: '500'
+  }
 });
