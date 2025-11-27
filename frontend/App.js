@@ -7,16 +7,22 @@ import 'react-native-gesture-handler';
 
 import CustomDrawer from './src/components/CustomDrawer';
 import FakeSplashScreen from './src/screens/FakeSplashScreen';
-import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 import ScanQRScreen from './src/screens/ScanQRScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-function AppDrawer({ token, user, setToken }) {
+function AppDrawer({ token, user, setToken, setUser }) {
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+  };
 
   return (
     <Drawer.Navigator
@@ -30,14 +36,13 @@ function AppDrawer({ token, user, setToken }) {
         <CustomDrawer
           {...props}
           user={user}
+          setUser={setUser}
+          token={token}
           unreadCount={unreadCount}
+          onLogout={handleLogout}
         />
       )}
     >
-      <Drawer.Screen name="Home">
-        {(props) => <HomeScreen {...props} />}
-      </Drawer.Screen>
-
       <Drawer.Screen name="Notifications">
         {(props) => (
           <NotificationsScreen
@@ -81,13 +86,35 @@ export default function App() {
         {token ? (
           <Stack.Screen name="Main">
             {() => (
-              <AppDrawer token={token} user={user} setToken={setToken} />
+              <AppDrawer 
+                token={token} 
+                user={user} 
+                setToken={setToken} 
+                setUser={setUser} 
+              />
             )}
           </Stack.Screen>
         ) : (
-          <Stack.Screen name="Login">
-            {() => <LoginScreen setToken={setToken} setUser={setUser} />}
-          </Stack.Screen>
+          <Stack.Group screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login">
+              {({ navigation }) => (
+                <LoginScreen 
+                    setToken={setToken} 
+                    setUser={setUser} 
+                    navigation={navigation}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Register">
+              {({ navigation }) => (
+                <RegisterScreen 
+                    setToken={setToken} 
+                    setUser={setUser} 
+                    navigation={navigation} 
+                />
+              )}
+            </Stack.Screen>
+          </Stack.Group>
         )}
       </Stack.Navigator>
     </NavigationContainer>
